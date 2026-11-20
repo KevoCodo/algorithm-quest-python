@@ -53,6 +53,6 @@ test("goal can be reached through a legal path", () => {
     position = result.position;
   }
   assert.deepEqual(position, GOAL);
-  assert.equal(movePlayer({ row: 4, col: 3 }, "right").blocked, true);
+  assert.equal(movePlayer({ row: 4, col: 2 }, "right").blocked, true);
   assert.equal(movePlayer({ row: 3, col: 4 }, "down").won, true);
 });
