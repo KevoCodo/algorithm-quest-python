@@ -37,7 +37,11 @@ npm run build
 
 CI runs on pushes to `main` and `feature/**` and PRs to `main`. A lockfile is still pending from AQ-101; CI currently uses `npm install` rather than `npm ci` until a lockfile is committed.
 
-## Python movement API\n\nThe learner can call four zero-argument Python functions: `move_up()`, `move_down()`, `move_left()`, and `move_right()`. Calls are recorded **in order** by the worker, then `replayMoves()` validates each direction against the shared maze engine. Every Run starts at the entrance. If a command hits a wall or boundary, execution stops and reports the number of legal moves. Reaching the goal stops the sequence with a success state. More than 100 commands or an unknown direction are rejected.\n\nExample route from start to goal:\n\n```python\nmove_right()\nmove_down()\nmove_down()\nmove_right()\nmove_right()\nmove_down()\nmove_right()\nmove_down()\n```\n\nThe learner can use Python loops to produce the same ordered commands. Code execution is browser-local and subject to runtime limits.\n\n## Maze and learning notes
+## Python movement API\n\nThe learner can call four zero-argument Python functions: `move_up()`, `move_down()`, `move_left()`, and `move_right()`. Calls are recorded **in order** by the worker, then `replayMoves()` validates each direction against the shared maze engine. Every Run starts at the entrance. If a command hits a wall or boundary, execution stops and reports the number of legal moves. Reaching the goal stops the sequence with a success state. More than 100 commands or an unknown direction are rejected.\n\nExample route from start to goal:\n\n```python\nmove_right()\nmove_down()\nmove_down()\nmove_right()\nmove_right()\nmove_down()\nmove_right()\nmove_down()\n```\n\nThe learner can use Python loops to produce the same ordered commands. Code execution is browser-local and subject to runtime limits.\n\n## Lesson one: Sequencing
+
+Learners inspect a visual maze, edit the Python starter code, and run the program. The lesson supplies progressive hints, readable success/error feedback, and an interactive step trace to review each movement, including the move that hit a wall. Learners can edit and retry without reloading.
+
+## Maze and learning notes
 
 - Grid coordinates are zero-based in source code (row, column), displayed as one-based to learners.
 - `S` denotes the start, `#` a wall, `G` the goal.
