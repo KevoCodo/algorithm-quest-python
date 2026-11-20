@@ -12,13 +12,13 @@ export default function Home() {
           Learn Python by solving a maze.
         </h1>
         <p className="max-w-2xl text-lg leading-relaxed text-slate-300">
-          Algorithms begin with a sequence of decisions. Get to know the maze by moving your
-          explorer, one step at a time. Python controls are coming in the next lesson update.
+          Algorithms begin with a sequence of decisions. Use the maze to plan your route,
+          then write real Python commands to guide the explorer.
         </p>
       </header>
       <MazePlayground />
       <footer className="text-sm text-slate-400">
-        AQ-102 · Maze movement preview. No account or login required.
+        AQ-103 · Browser-based Python movement preview. No account or login required.
       </footer>
     </main>
   );
