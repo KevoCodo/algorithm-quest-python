@@ -6,9 +6,10 @@ A browser-based teaching portfolio project that introduces computational thinkin
 
 - **AQ-101:** Next.js, TypeScript, Tailwind foundation, CI and setup documentation
 - **AQ-102:** Deterministic 5×5 maze with keyboard/button controls, movement and collision rules, reset and unit tests
-- **Coming next (AQ-103/104):** Run real Python in a Web Worker and connect learner commands to the maze
+- **AQ-103:** Execute learner Python in a separate browser Web Worker, with clear errors, bounded command output, and timeout recovery.
+- **Coming next (AQ-104):** Refine and test the Python movement command API and guided learning experience.
 
-**Important:** This version is a manual movement preview; it does not execute Python yet.
+**Important:** This version runs real Python using Pyodide and maps the resulting movement commands into the maze. The guided lesson and more extensive assessment are upcoming.
 
 ## Technical stack
 
@@ -23,7 +24,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000 and guide the explorer using the on-screen arrow buttons or keyboard arrow keys. Walls and the grid boundary block movement. Reach the golden star to win; press **Reset maze** to try again.
+Open http://localhost:3000. You can guide the explorer with arrows or type Python in the editor and press **Run Python**. Available functions are `move_up()`, `move_down()`, `move_left()`, and `move_right()`. Every Python run starts the explorer at the beginning. The first run downloads the Pyodide runtime from a pinned CDN URL, so the browser must be online. Use **Reset maze** to stop an active run and try again.
 
 ## Quality checks
 
@@ -41,8 +42,12 @@ CI runs on pushes to `main` and `feature/**` and PRs to `main`. A lockfile is st
 - Grid coordinates are zero-based in source code (row, column), displayed as one-based to learners.
 - `S` denotes the start, `#` a wall, `G` the goal.
 - Current exercise: reason about sequencing, direction, and correcting mistakes using immediate visual feedback.
-- Planned extension: learners will express the same route as Python movement commands, observing the effect of each instruction.
+- The Python worker returns movement commands after executing Python. React replays those commands with the existing deterministic maze rules. This keeps the maze logic consistent for manual and Python play.
 - All maze rules live in `src/lib/maze.mjs`, with type declarations in `src/lib/maze.d.mts` and tests in `tests/maze.test.mjs`.
+
+## Runtime safety notes
+
+Python runs in a disposable Web Worker, not on a server. A watchdog terminates and recreates the worker after a timeout, and the movement API caps emitted commands at 100. **Pyodide is not a hardened security sandbox**: arbitrary Python is permitted in the worker and the code should not receive credentials, sensitive data, privileged APIs, or cross-origin access. The runtime is intended for voluntary, untrusted public exercises, not adversarial code execution. For future deployment hardening, add a restrictive Content Security Policy, review the runtime CDN supply chain and consider a same-origin pinned build.
 
 ## Setup
 
