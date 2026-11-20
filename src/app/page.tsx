@@ -2,7 +2,9 @@ import MazePlayground from "@/components/maze-playground";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-4 py-10 sm:px-8 sm:py-16">
+    <>
+      <a href="#lesson" className="sr-only fixed left-4 top-4 z-50 rounded-lg bg-cyan-300 px-4 py-3 font-bold text-slate-950 focus:not-sr-only">Skip to interactive lesson</a>
+      <main className="mx-auto flex min-h-screen max-w-6xl min-w-0 flex-col gap-8 px-3 py-8 sm:px-8 sm:py-16">
       <header className="max-w-3xl space-y-4">
         <div className="inline-flex rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-xs font-semibold tracking-wide text-cyan-200">
           Interactive learning · Python maze preview
@@ -18,8 +20,9 @@ export default function Home() {
       </header>
       <MazePlayground />
       <footer className="text-sm text-slate-400">
-        AQ-103 · Browser-based Python movement preview. No account or login required.
+        Algorithm Quest · Interactive Python maze lesson. No account or login required.
       </footer>
-    </main>
+      </main>
+    </>
   );
 }

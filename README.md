@@ -113,6 +113,10 @@ GitHub Actions runs those checks for feature branch pushes and pull requests. A 
 - [ ] Try an infinite loop and verify timeout/recovery.
 - [ ] Capture a real screenshot/GIF for the README once the running UI is verified.
 
+## Accessibility and responsive behavior
+
+AQ-108 adds a mobile-first lesson layout, appropriately sized movement targets, visible keyboard focus indicators, a skip link, explicit names for action groups, and readable learner status messaging. The Python editor remains editable with keyboard input, while keyboard arrow shortcuts operate outside text inputs. Users who prefer reduced motion are not forced into transitions. These implementation checks **do not replace** real-device, screen-reader, or mobile-browser manual QA.
+
 ## Constraints and security
 
 The worker is disposable and enforces an 8,000-character input cap, 100-command output cap, and a timeout that terminates the worker. **A Web Worker and Pyodide are not a hardened security sandbox.** This exercise must not be given credentials, privileged APIs, or sensitive data. For production hardening, review dependencies and CDN delivery, add a restrictive Content Security Policy, and consider same-origin pinned runtime assets.

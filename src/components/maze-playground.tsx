@@ -189,12 +189,12 @@ export default function MazePlayground() {
   const shownSteps = trace.length ? (preview?.steps ?? 0) : steps;
 
   return (
-    <section aria-labelledby="maze-title" className="rounded-3xl border border-slate-700 bg-slate-900/90 p-5 shadow-2xl sm:p-8">
+    <section id="lesson" aria-labelledby="maze-title" aria-describedby="lesson-summary" className="min-w-0 rounded-3xl border border-slate-700 bg-slate-900/90 p-4 shadow-2xl sm:p-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-300">Level 01 · Python movement</p>
           <h2 id="maze-title" className="text-2xl font-bold">Find the golden goal</h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-300">
+          <p id="lesson-summary" className="mt-2 max-w-xl text-sm leading-relaxed text-slate-300">
             Write a sequence of Python commands that moves the explorer from S to the star. Each Run starts at S.
           </p>
         </div>
@@ -212,12 +212,12 @@ export default function MazePlayground() {
           <li>Run your code and review each step to improve it.</li>
         </ol>
       </div>
-      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(270px,0.9fr)]">
-        <div className="space-y-4">
+      <div className="grid min-w-0 gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+        <div className="min-w-0 space-y-4">
           <div
             className="mx-auto grid aspect-square w-full max-w-[440px] grid-cols-5 gap-1.5 rounded-2xl bg-slate-950 p-2.5 ring-1 ring-slate-700 sm:gap-2 sm:p-3"
             role="img"
-            aria-label={`Five by five maze. Explorer at row ${shownPosition.row + 1}, column ${shownPosition.col + 1}, facing ${shownFacing}. Goal at row ${GOAL.row + 1}, column ${GOAL.col + 1}.`}
+            aria-label={`Five by five maze. Explorer at row ${shownPosition.row + 1}, column ${shownPosition.col + 1}, facing ${shownFacing}. Goal at row ${GOAL.row + 1}, column ${GOAL.col + 1}. Wall locations are shown visually. Use the direction controls or the Python editor to navigate.`}
           >
             {MAZE_ROWS.flatMap((row, rowIndex) =>
               Array.from(row).map((_, colIndex) => {
@@ -243,51 +243,53 @@ export default function MazePlayground() {
               }),
             )}
           </div>
-          <div className="mx-auto flex max-w-[440px] flex-wrap justify-between gap-3 text-xs text-slate-300">
+          <div className="mx-auto flex max-w-[440px] flex-wrap justify-between gap-3 text-sm text-slate-200">
             <span><span className="text-cyan-300">●</span> Explorer</span>
             <span><span className="text-slate-400">■</span> Wall</span>
             <span><span className="text-amber-300">★</span> Goal</span>
           </div>
-          <div className="mx-auto grid w-fit grid-cols-3 gap-2" aria-label="Manual movement controls">
+          <p className="mx-auto max-w-[440px] text-center text-sm font-medium text-cyan-100" aria-live="off">Explorer position: row {shownPosition.row + 1}, column {shownPosition.col + 1}. Facing {shownFacing}.</p>
+          <div className="mx-auto grid w-fit grid-cols-3 gap-2" role="group" aria-label="Manual movement controls">
             <div />
-            <button aria-label="Move up" type="button" disabled={complete || running} onClick={() => move("up")} className="maze-control">↑</button>
+            <button aria-label="Move up" aria-keyshortcuts="ArrowUp" type="button" disabled={complete || running} onClick={() => move("up")} className="maze-control">↑</button>
             <div />
-            <button aria-label="Move left" type="button" disabled={complete || running} onClick={() => move("left")} className="maze-control">←</button>
-            <button aria-label="Move down" type="button" disabled={complete || running} onClick={() => move("down")} className="maze-control">↓</button>
-            <button aria-label="Move right" type="button" disabled={complete || running} onClick={() => move("right")} className="maze-control">→</button>
+            <button aria-label="Move left" aria-keyshortcuts="ArrowLeft" type="button" disabled={complete || running} onClick={() => move("left")} className="maze-control">←</button>
+            <button aria-label="Move down" aria-keyshortcuts="ArrowDown" type="button" disabled={complete || running} onClick={() => move("down")} className="maze-control">↓</button>
+            <button aria-label="Move right" aria-keyshortcuts="ArrowRight" type="button" disabled={complete || running} onClick={() => move("right")} className="maze-control">→</button>
           </div>
-          <p className="text-center text-xs text-slate-400">Keyboard arrows also work when the editor is not focused.</p>
+          <p className="text-center text-sm text-slate-300">Keyboard arrow keys work when the editor is not focused. You can also use the buttons by touch or keyboard.</p>
           {trace.length > 0 && (
-            <div className="rounded-xl border border-slate-700 bg-slate-950/70 p-4">
+            <div role="group" aria-label="Python step review" className="rounded-xl border border-slate-700 bg-slate-950/70 p-4">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-bold">Review your program</h3>
                 <span className="text-xs text-cyan-200">Step {traceIndex} of {trace.length}</span>
               </div>
-              <p className="mt-2 text-sm text-slate-300" aria-live="polite">
+              <p className="mt-2 text-sm text-slate-200" role="status" aria-live="polite">
                 {preview ? (preview.blocked ? "This move was blocked by a wall or edge." : preview.won ? "The explorer reached the star!" : "Moved " + preview.direction + ".") : "Starting at S. What will the first instruction do?"}
               </p>
-              <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="mt-3 grid grid-cols-1 gap-3 min-[350px]:grid-cols-2">
                 <button type="button" disabled={running || traceIndex === 0} onClick={() => setTraceIndex(n => Math.max(0, n - 1))}
-                  className="rounded-lg border border-slate-600 p-2 text-sm disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">Previous step</button>
+                  className="min-h-11 rounded-lg border border-slate-500 px-3 py-2 text-sm disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">Previous step</button>
                 <button type="button" disabled={running || traceIndex === trace.length} onClick={() => setTraceIndex(n => Math.min(trace.length, n + 1))}
-                  className="rounded-lg border border-slate-600 p-2 text-sm disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">Next step</button>
+                  className="min-h-11 rounded-lg border border-slate-500 px-3 py-2 text-sm disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">Next step</button>
               </div>
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-4">
-          <div>
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="min-w-0">
             <label htmlFor="python-code" className="mb-2 block text-sm font-bold text-white">Your Python code</label>
             <textarea id="python-code" value={code} onChange={(event) => setCode(event.target.value)}
+              aria-label="Editable Python movement program"
               spellCheck={false} autoCapitalize="off" autoCorrect="off"
-              className="min-h-64 w-full resize-y rounded-xl border border-slate-600 bg-slate-950 p-4 font-mono text-sm leading-relaxed text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
+              className="block min-h-64 min-w-0 w-full resize-y rounded-xl border border-slate-600 bg-slate-950 p-4 font-mono text-sm leading-relaxed text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
               aria-describedby="python-help" />
             <p id="python-help" className="mt-2 text-xs leading-relaxed text-slate-300">
               Commands: <code>move_up()</code>, <code>move_down()</code>, <code>move_left()</code>, <code>move_right()</code>.
               Python downloads the first time you run it.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div role="group" aria-label="Python execution controls" className="grid grid-cols-1 gap-3 min-[350px]:grid-cols-2">
             <button type="button" disabled={running} onClick={runPython}
               className="rounded-xl bg-cyan-400 px-4 py-3 font-bold text-slate-950 hover:bg-cyan-300 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
               {running ? "Running..." : "Run Python"}
@@ -297,22 +299,22 @@ export default function MazePlayground() {
               {running ? "Stop & reset" : "Reset maze"}
             </button>
           </div>
-          <p className="text-xs text-slate-400" aria-live="polite">
+          <p role="status" className="text-sm text-slate-300" aria-live="polite">
             {running ? "Python is running in a separate browser worker." : pythonReady ? "Python engine ready." : "Python engine loads on first run."}
           </p>
           <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-sm font-bold">Need a hint?</h3>
               <button type="button" disabled={running || hintLevel >= 3} onClick={() => setHintLevel(n => Math.min(3,n + 1))}
-                className="rounded-lg border border-cyan-500/50 px-3 py-2 text-xs text-cyan-200 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">
+                className="min-h-11 rounded-lg border border-cyan-500/50 px-3 py-2 text-sm text-cyan-100 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">
                 {hintLevel === 0 ? "Show first hint" : hintLevel === 3 ? "All hints shown" : "Show another hint"}
               </button>
             </div>
-            <p className="mt-2 text-sm text-slate-300" aria-live="polite">
+            <p className="mt-2 text-sm text-slate-200" aria-live="polite">
               {hintLevel ? getLessonHint(hintLevel) : "Try a route before revealing a hint."}
             </p>
           </div>
-          <div role="status" aria-live="polite"
+          <div role="status" aria-live="polite" aria-atomic="true" aria-label="Python feedback"
             className={`min-h-24 whitespace-pre-wrap break-words rounded-xl border p-4 text-sm leading-relaxed ${complete ? "border-emerald-500/60 bg-emerald-950/40 text-emerald-200" : "border-slate-700 bg-slate-800/80 text-slate-200"}`}>
             {feedback}
           </div>
