@@ -117,6 +117,10 @@ GitHub Actions runs those checks for feature branch pushes and pull requests. A 
 
 The worker is disposable and enforces an 8,000-character input cap, 100-command output cap, and a timeout that terminates the worker. **A Web Worker and Pyodide are not a hardened security sandbox.** This exercise must not be given credentials, privileged APIs, or sensitive data. For production hardening, review dependencies and CDN delivery, add a restrictive Content Security Policy, and consider same-origin pinned runtime assets.
 
+## Release and deployment
+
+See [the release checklist](docs/RELEASE.md) for deploying through Vercel, validating real Python in Chromium, capturing an actual application screenshot, and tagging the verified release. **No live demo URL or release tag is available yet.**
+
 ## Planned releases
 
 [AQ-001 epic](https://github.com/KevoCodo/algorithm-quest-python/issues/1) tracks the MVP. The remaining release work includes accessibility/mobile polish and deployment verification.
