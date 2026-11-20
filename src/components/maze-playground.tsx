@@ -273,7 +273,7 @@ export default function MazePlayground() {
                   className="rounded-lg border border-slate-600 p-2 text-sm disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-cyan-300">Next step</button>
               </div>
             </div>
-          )>
+          )}
         </div>
         <div className="flex flex-col gap-4">
           <div>
