@@ -1,30 +1,96 @@
 # Algorithm Quest: Python Maze Challenge
 
-A browser-based teaching portfolio project that introduces computational thinking through a visual maze. Designed as an accessible hands-on learning experience with clear feedback and progressively deeper Python exercises.
+A small, browser-based Python lesson that introduces **sequencing**, **spatial reasoning**, and **debugging** through a five-by-five maze. This public repository is a software engineering and instructional design portfolio example.
 
-## Status
+> **Project status:** AQ-101 through AQ-105 are implemented. This README documents the lesson and its design rationale. A production deployment and an actual browser test of Pyodide are still pending. Do not treat automated CI as proof that the CDN runtime works end-to-end in a browser.
 
-- **AQ-101:** Next.js, TypeScript, Tailwind foundation, CI and setup documentation
-- **AQ-102:** Deterministic 5×5 maze with keyboard/button controls, movement and collision rules, reset and unit tests
-- **AQ-103:** Execute learner Python in a separate browser Web Worker, with clear errors, bounded command output, and timeout recovery.
-- **AQ-104:** Define the movement command contract, validate/replay action sequences and verify legal moves, collisions and victory with automated tests.
+![Diagram of the five-by-five maze with the start, walls, and goal. This is a schematic, not a browser screenshot.](docs/maze-diagram.svg)
 
-**Important:** This version runs real Python using Pyodide and maps the resulting movement commands into the maze. The guided lesson and more extensive assessment are upcoming.
+*Illustrative maze diagram (not a screenshot of the running app). A real application screenshot or short GIF will be captured during release QA.*
 
-## Technical stack
+## Audience and prerequisites
 
-Next.js App Router, React, TypeScript, Tailwind CSS v4, Node.js 22 and GitHub Actions. The movement rules are implemented in a framework-independent JavaScript module so future Python execution can reuse the exact same rules.
+- **Audience:** Beginners learning introductory Python, including learners who have never written movement commands before.
+- **Prerequisites:** Basic understanding of using a web browser and typing into a text editor. Knowing what a Python function call looks like is helpful but not required.
+- **Format:** One short, self-paced interactive lesson. No account, database, or API credentials are needed.
+- **Learner objective:** Write and adjust a sequence of Python calls so a character moves from **S** to **★** without entering a wall or crossing the grid boundary.
+
+## Try the lesson
+
+1. Open the app, locate **S** (start), the dark wall squares, and **★** (goal).
+2. Read the objective. Use the arrow buttons to experiment with possible routes.
+3. Edit the starter code in **Your Python code** using `move_up()`, `move_down()`, `move_left()`, and `move_right()`.
+4. Select **Run Python**. The browser downloads Pyodide on first run, which requires an internet connection.
+5. Read the feedback. If the route ends early or hits a wall, inspect the **Previous step** and **Next step** timeline. Try the progressive hints if needed.
+6. Adjust the code and run it again, or select **Reset maze**. Each Python run starts at **S**.
+
+**Sample successful route:**
+
+```python
+move_right()
+move_down()
+move_down()
+move_right()
+move_right()
+move_down()
+move_right()
+move_down()
+```
+
+The goal is reached on the eighth legal move. The learner can also write a Python `for` loop that calls the same movement functions.
+
+## Teaching rationale
+
+| Design choice | Intended learning effect | Observable evidence |
+| --- | --- | --- |
+| Small deterministic 5×5 maze | Minimize incidental complexity so learners can focus on ordering decisions | Learner can predict the next square before running code |
+| Manual arrow controls before Python | Make the physical action concrete before expressing it as code | Learner can map a direction to a function call |
+| Short starter program | Lower the difficulty of starting from an empty editor | Learner completes and modifies an existing sequence |
+| Immediate success, blocked, and incomplete feedback | Make mistakes actionable rather than treating them as a generic failure | Learner adjusts the specific command causing a collision |
+| Step-by-step trace | Make sequential execution observable | Learner can explain why a move succeeded or failed |
+| Three staged hints | Support learning while preserving learner agency | Learner can revise a solution without being given the full program |
+| Reset/retry | Encourage iteration and debugging | Learner can test a second approach without refreshing |
+
+**Assessment criterion:** A correct solution reaches the star using valid movement commands. A successful run is shown in the UI. Completing the maze demonstrates *this specific sequencing task*, not mastery of broader algorithm design.
+
+**Follow-up discussion:** Ask the learner to describe how moving one instruction earlier or later changes the outcome. Advanced learners can compare repeated calls with a loop and explain when a reusable pattern helps.
+
+## Architecture
+
+```text
+Next.js/React lesson page
+  ├── Manual arrows ────────> movePlayer() ────────> maze state and feedback
+  └── Run Python
+        └── Web Worker (public/workers/python-worker.js)
+              └── pinned Pyodide CDN (first-run download)
+                    └── Python calls move_up/down/left/right
+                          └── ordered direction list
+                                └── replayMoves() + getMovementTrace()
+                                      └── position, feedback, and step review
+```
+
+- `src/lib/maze.mjs`: deterministic grid, boundaries, collision rules, and replay validation.
+- `src/lib/lesson.mjs`: reviewable movement timeline, staged hints, and outcome messages.
+- `src/components/maze-playground.tsx`: client-side lesson UI, editor, arrows, status, and control buttons.
+- `public/workers/python-worker.js`: Python runtime loader and the small, learner-facing movement bridge.
+- `tests/*.test.mjs`: automated tests for maze mechanics, command limits, step sequences, and lesson feedback.
+
+The Python worker records movement calls in their original order. React replays that list using the same rules as the manual arrows. Python code is not run on the application server.
 
 ## Run locally
 
-Install Node.js 22 (`.nvmrc`), then:
+1. Install **Node.js 22** (see `.nvmrc`).
+2. Clone the repository.
+3. Run:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000. You can guide the explorer with arrows or type Python in the editor and press **Run Python**. Available functions are `move_up()`, `move_down()`, `move_left()`, and `move_right()`. Every Python run starts the explorer at the beginning. The first run downloads the Pyodide runtime from a pinned CDN URL, so the browser must be online. Use **Reset maze** to stop an active run and try again.
+4. Open [http://localhost:3000](http://localhost:3000).
+
+No environment variables or secrets are required; see `.env.example`. An internet connection is needed for npm installation and the first Pyodide runtime download.
 
 ## Quality checks
 
@@ -35,32 +101,26 @@ npm test
 npm run build
 ```
 
-CI runs on pushes to `main` and `feature/**` and PRs to `main`. A lockfile is still pending from AQ-101; CI currently uses `npm install` rather than `npm ci` until a lockfile is committed.
+GitHub Actions runs those checks for feature branch pushes and pull requests. A committed dependency lockfile is still pending, so CI currently uses `npm install` rather than `npm ci`. **Tests cover the logic but do not run real Python in a browser.**
 
-## Python movement API\n\nThe learner can call four zero-argument Python functions: `move_up()`, `move_down()`, `move_left()`, and `move_right()`. Calls are recorded **in order** by the worker, then `replayMoves()` validates each direction against the shared maze engine. Every Run starts at the entrance. If a command hits a wall or boundary, execution stops and reports the number of legal moves. Reaching the goal stops the sequence with a success state. More than 100 commands or an unknown direction are rejected.\n\nExample route from start to goal:\n\n```python\nmove_right()\nmove_down()\nmove_down()\nmove_right()\nmove_right()\nmove_down()\nmove_right()\nmove_down()\n```\n\nThe learner can use Python loops to produce the same ordered commands. Code execution is browser-local and subject to runtime limits.\n\n## Lesson one: Sequencing
+### Browser QA checklist (required before public release)
 
-Learners inspect a visual maze, edit the Python starter code, and run the program. The lesson supplies progressive hints, readable success/error feedback, and an interactive step trace to review each movement, including the move that hit a wall. Learners can edit and retry without reloading.
+- [ ] Load Pyodide in a browser with an internet connection.
+- [ ] Run the sample route and reach the goal.
+- [ ] Trigger a Python syntax error and verify readable feedback.
+- [ ] Test an incomplete route, a wall collision, and reset.
+- [ ] Verify step review and hints using a keyboard and mobile viewport.
+- [ ] Try an infinite loop and verify timeout/recovery.
+- [ ] Capture a real screenshot/GIF for the README once the running UI is verified.
 
-## Maze and learning notes
+## Constraints and security
 
-- Grid coordinates are zero-based in source code (row, column), displayed as one-based to learners.
-- `S` denotes the start, `#` a wall, `G` the goal.
-- Current exercise: reason about sequencing, direction, and correcting mistakes using immediate visual feedback.
-- The Python worker returns movement commands after executing Python. React replays those commands with the existing deterministic maze rules. This keeps the maze logic consistent for manual and Python play.
-- All maze rules live in `src/lib/maze.mjs`, with type declarations in `src/lib/maze.d.mts` and tests in `tests/maze.test.mjs`.
+The worker is disposable and enforces an 8,000-character input cap, 100-command output cap, and a timeout that terminates the worker. **A Web Worker and Pyodide are not a hardened security sandbox.** This exercise must not be given credentials, privileged APIs, or sensitive data. For production hardening, review dependencies and CDN delivery, add a restrictive Content Security Policy, and consider same-origin pinned runtime assets.
 
-## Runtime safety notes
+## Planned releases
 
-Python runs in a disposable Web Worker, not on a server. A watchdog terminates and recreates the worker after a timeout, and the movement API caps emitted commands at 100. **Pyodide is not a hardened security sandbox**: arbitrary Python is permitted in the worker and the code should not receive credentials, sensitive data, privileged APIs, or cross-origin access. The runtime is intended for voluntary, untrusted public exercises, not adversarial code execution. For future deployment hardening, add a restrictive Content Security Policy, review the runtime CDN supply chain and consider a same-origin pinned build.
-
-## Setup
-
-No environment variables, secrets, accounts, or external data store are required. `.env.example` documents this.
-
-## Issues
-
-[Project epic](https://github.com/KevoCodo/algorithm-quest-python/issues/1) · [AQ-102 maze](https://github.com/KevoCodo/algorithm-quest-python/issues/3)
+[AQ-001 epic](https://github.com/KevoCodo/algorithm-quest-python/issues/1) tracks the MVP. The remaining release work includes accessibility/mobile polish and deployment verification.
 
 ## License
 
-Publicly visible source; no open-source reuse license granted at this time.
+The source is publicly visible. No open-source reuse license has been granted.
