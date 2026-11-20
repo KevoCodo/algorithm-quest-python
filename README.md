@@ -7,7 +7,7 @@ A browser-based teaching portfolio project that introduces computational thinkin
 - **AQ-101:** Next.js, TypeScript, Tailwind foundation, CI and setup documentation
 - **AQ-102:** Deterministic 5×5 maze with keyboard/button controls, movement and collision rules, reset and unit tests
 - **AQ-103:** Execute learner Python in a separate browser Web Worker, with clear errors, bounded command output, and timeout recovery.
-- **Coming next (AQ-104):** Refine and test the Python movement command API and guided learning experience.
+- **AQ-104:** Define the movement command contract, validate/replay action sequences and verify legal moves, collisions and victory with automated tests.
 
 **Important:** This version runs real Python using Pyodide and maps the resulting movement commands into the maze. The guided lesson and more extensive assessment are upcoming.
 
@@ -37,7 +37,7 @@ npm run build
 
 CI runs on pushes to `main` and `feature/**` and PRs to `main`. A lockfile is still pending from AQ-101; CI currently uses `npm install` rather than `npm ci` until a lockfile is committed.
 
-## Maze and learning notes
+## Python movement API\n\nThe learner can call four zero-argument Python functions: `move_up()`, `move_down()`, `move_left()`, and `move_right()`. Calls are recorded **in order** by the worker, then `replayMoves()` validates each direction against the shared maze engine. Every Run starts at the entrance. If a command hits a wall or boundary, execution stops and reports the number of legal moves. Reaching the goal stops the sequence with a success state. More than 100 commands or an unknown direction are rejected.\n\nExample route from start to goal:\n\n```python\nmove_right()\nmove_down()\nmove_down()\nmove_right()\nmove_right()\nmove_down()\nmove_right()\nmove_down()\n```\n\nThe learner can use Python loops to produce the same ordered commands. Code execution is browser-local and subject to runtime limits.\n\n## Maze and learning notes
 
 - Grid coordinates are zero-based in source code (row, column), displayed as one-based to learners.
 - `S` denotes the start, `#` a wall, `G` the goal.

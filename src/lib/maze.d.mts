@@ -19,3 +19,12 @@ export function movePlayer(
   blocked: boolean;
   won: boolean;
 };
+
+/** Run ordered Python movement commands from START, stopping on a wall or victory. */
+export function replayMoves(actions: readonly string[]): {
+  position: Position;
+  facing: Direction;
+  steps: number;
+  blocked: boolean;
+  won: boolean;
+};

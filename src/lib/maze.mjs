@@ -58,3 +58,34 @@ export function getCellType(row, col) {
   if (cell === "G") return "goal";
   return "path";
 }
+
+/**
+ * Replay an ordered list of actions produced by the Python worker.
+ * Start from the maze entrance every time, stop on collision or victory,
+ * and never trust directions received from a worker without validation.
+ * @param {readonly string[]} actions
+ */
+export function replayMoves(actions) {
+  if (!Array.isArray(actions)) throw new TypeError("Movement commands must be an array.");
+  if (actions.length > 100) throw new RangeError("Movement limit reached (100 commands).");
+
+  let position = { ...START };
+  let facing = "right";
+  let steps = 0;
+  for (const direction of actions) {
+    if (typeof direction !== "string" || !Object.hasOwn(DIRECTIONS, direction)) {
+      throw new Error("Unknown movement command.");
+    }
+    const move = movePlayer(position, direction);
+    facing = move.facing;
+    if (move.blocked) {
+      return { position, facing, steps, blocked: true, won: false };
+    }
+    position = move.position;
+    steps++;
+    if (move.won) {
+      return { position, facing, steps, blocked: false, won: true };
+    }
+  }
+  return { position, facing, steps, blocked: false, won: false };
+}

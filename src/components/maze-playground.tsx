@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  GOAL, MAZE_ROWS, START, getCellType, movePlayer, type Direction, type Position,
+  GOAL, MAZE_ROWS, START, getCellType, movePlayer, replayMoves, type Direction, type Position,
 } from "@/lib/maze.mjs";
 
 const DIRECTIONS: Record<Direction, string> = { up: "↑", down: "↓", left: "←", right: "→" };
@@ -41,28 +41,20 @@ export default function MazePlayground() {
   }, []);
 
   const applyMoves = useCallback((directions: Direction[]) => {
-    let current: Position = { ...START };
-    let direction: Direction = "right";
-    let count = 0;
-    let blocked = false;
-    let won = false;
-    for (const nextDirection of directions) {
-      const result = movePlayer(current, nextDirection);
-      direction = nextDirection;
-      if (result.blocked) { blocked = true; break; }
-      current = result.position;
-      count++;
-      if (result.won) { won = true; break; }
+    try {
+      const result = replayMoves(directions);
+      setPosition(result.position);
+      setFacing(result.facing);
+      setSteps(result.steps);
+      setComplete(result.won);
+      setFeedback(result.won
+        ? "Success! Your Python reached the goal."
+        : result.blocked
+          ? `Your Python moved ${result.steps} step(s), then hit a wall or boundary. Adjust the commands and retry.`
+          : `Python completed ${result.steps} step(s). You are not at the goal yet.`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Invalid movement commands.");
     }
-    setPosition(current);
-    setFacing(direction);
-    setSteps(count);
-    setComplete(won);
-    setFeedback(won
-      ? "Success! Your Python reached the goal."
-      : blocked
-        ? `Your Python moved ${count} step(s), then hit a wall or boundary. Adjust the commands and retry.`
-        : `Python completed ${count} step(s). You are not at the goal yet.`);
   }, []);
 
   const startWorker = useCallback(() => {
