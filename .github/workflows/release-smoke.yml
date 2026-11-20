@@ -1,0 +1,41 @@
+name: Release browser smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: Actual public Vercel deployment HTTPS URL
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE_URL: ${{ inputs.deployment_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Prepare screenshot directory
+        run: mkdir -p artifacts
+      - name: Run browser smoke tests
+        run: npm run test:e2e
+      - name: Upload screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: algorithm-quest-browser-smoke
+          path: |
+            artifacts/
+            test-results/
+          if-no-files-found: ignore
