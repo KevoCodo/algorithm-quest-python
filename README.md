@@ -119,7 +119,7 @@ The worker is disposable and enforces an 8,000-character input cap, 100-command 
 
 ## Release and deployment
 
-See [the release checklist](docs/RELEASE.md) for deploying through Vercel, validating real Python in Chromium, capturing an actual application screenshot, and tagging the verified release. **No live demo URL or release tag is available yet.**
+**Local-first:** run `npx playwright install chromium` once, then `npm run test:e2e` to start the app locally and test real Python in Chromium. See [the local QA and optional release runbook](docs/RELEASE.md). Vercel Hobby offers a free personal, non-commercial hosting option later; no deployment or release tag has been created.
 
 ## Planned releases
 

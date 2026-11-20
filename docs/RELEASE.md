@@ -1,31 +1,39 @@
-# AQ-107 deployment and release checklist
+# AQ-107: Local-first verification and optional deployment
 
-**Status: release preparation only. Do not mark AQ-107 complete until the live deployment and browser tests pass.**
+**Current focus: local development.** A public Vercel deployment and GitHub release are deferred until the app is ready to share. Do not claim that the deployment has happened.
 
-## Deploy with Vercel
-1. In the Vercel dashboard import `KevoCodo/algorithm-quest-python` from GitHub.
-2. Use the Next.js framework preset, root directory `./`, production branch `main`, and default build/output settings.
-3. No environment variables or database are required.
-4. Deploy, then record the **actual** HTTPS production URL. Never assume a URL based on the repository name.
-5. Confirm the URL is public in a logged-out/incognito window.
+## Local browser testing
 
-## Browser QA
-In GitHub Actions, manually run **Release browser smoke**, entering the real production HTTPS URL. It installs Chromium and exercises the actual deployed page, including Pyodide downloading from its CDN.
+1. Install Node.js 22, then run `npm install`.
+2. Install browser test dependencies: `npx playwright install chromium`.
+3. Run `npm run test:e2e`. Playwright automatically starts the Next.js dev server at `http://127.0.0.1:3000` when no server is running.
+4. To inspect the app manually, run `npm run dev` and open `http://localhost:3000`.
+5. The first Python run downloads Pyodide from its pinned CDN, so an internet connection is required.
 
-- [ ] Public homepage loads without login
-- [ ] The eight movement commands reach the golden goal
-- [ ] The step-by-step review works
-- [ ] Python syntax errors display readable messages
-- [ ] A subsequent corrected run succeeds or reports an incomplete route
-- [ ] Reset and hints function
-- [ ] Infinite loop stops within the documented worker timeout
-- [ ] Mobile viewport and keyboard controls verified (AQ-108)
-- [ ] Real screenshot/GIF captured from the working app and inspected
+### Local acceptance checklist
 
-Download the browser test screenshot from the GitHub Actions artifact. Replace the current **illustrative diagram** with a verified browser screenshot in the README, add the actual demo link, and confirm CI stays green.
+- [ ] Open the maze locally and run the eight-command Python solution to reach the goal
+- [ ] Verify the Python step-by-step trace and arrow controls
+- [ ] Trigger a syntax error and verify understandable feedback
+- [ ] Edit and rerun a corrected/incomplete solution
+- [ ] Test reset, hints, and an infinite loop timeout
+- [ ] Inspect mobile width and keyboard use as part of AQ-108
+- [ ] Capture and review a genuine screenshot of the running application
 
-## Release tag
-Only **after** the above checks pass: tag the verified `main` commit `v1.0.0` and publish the GitHub release with the verified public demo URL. Do not tag merely because the production build passed.
+CI currently checks lint, typecheck, unit tests, and production build; these **do not** establish real-browser Pyodide functionality.
 
-## Constraints
-Pyodide runs browser-side in a disposable Web Worker, not a hardened sandbox. Do not expose secrets or privileged APIs to learner code. A slow or blocked CDN may prevent Python startup; browser tests are required to establish actual availability.
+## Optional Vercel deployment later
+
+Vercel's Hobby tier is free for personal, non-commercial use within usage limits. Confirm the project remains eligible for Hobby before publishing it as a personal portfolio demonstration. Import `KevoCodo/algorithm-quest-python` into Vercel, select Next.js, root `./`, and production branch `main`. No environment variables or database are required.
+
+After Vercel supplies an **actual HTTPS URL**, manually trigger GitHub Actions **Release browser smoke**, entering that URL, or locally run:
+
+```bash
+BASE_URL=https://your-verified-deployment.example npm run test:e2e
+```
+
+Replace the placeholder with the real deployment URL. Check anonymous access, browser tests, and screenshots before adding a live link to README or tagging `v1.0.0`. Do not fabricate a deployment URL, claim tests ran, or publish a version tag before verification.
+
+## Runtime safety
+
+Pyodide in a Web Worker is not a hardened security sandbox. Do not expose secrets or sensitive data to learner code.
