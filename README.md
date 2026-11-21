@@ -55,6 +55,29 @@ The goal is reached on the eighth legal move. The learner can also write a Pytho
 
 **Follow-up discussion:** Ask the learner to describe how moving one instruction earlier or later changes the outcome. Advanced learners can compare repeated calls with a loop and explain when a reusable pattern helps.
 
+## Level 2: Loops and conditional decisions (AQ-109)
+
+After completing Level 1 sequencing, choose **Level 2 · Algorithms** above the maze. The same deterministic 5×5 grid is reused intentionally: learners can concentrate on expressing an already-understood route as an algorithm instead of learning new geometry.
+
+**Learning objective:** Represent a path as a list of direction strings, use a Python `for` or `while` loop to process the list, and use `if`/`elif` branches to map directions to movement commands.
+
+The provided starter code includes the loop and two example branches, but leaves most of the route unfinished. Learners must replace `"?"` entries with safe directions. The Python worker parses the code using the Python AST and requires a real loop and an `if` statement before execution. The maze still validates the actual movements and goal. This AST check establishes the presence of language constructs, **not** that the learner understands them or that they are logically necessary.
+
+**Common misconceptions and assessment:** An unknown route value produces no movement unless matched by a branch. Repeated wrong directions can collide with walls. The step trace identifies where a proposed route fails, while the hints progressively point out the needed data and control flow. Completion requires reaching the goal in a run containing the loop and conditional. Ask the learner to explain why a branch is needed inside a loop and how changing one list entry changes the behavior.
+
+**Example successful Level 2 solution** (instructor reference; not prefilled into the learner editor):
+
+```python
+route = ["right", "down", "down", "right", "right", "down", "right", "down"]
+for direction in route:
+    if direction == "right":
+        move_right()
+    elif direction == "down":
+        move_down()
+```
+
+The Level 1 editor and behavior remain unchanged when switching back. This is a local-first portfolio enhancement; browser execution still needs the deferred AQ-107 smoke test before it can be described as fully verified.
+
 ## Architecture
 
 ```text

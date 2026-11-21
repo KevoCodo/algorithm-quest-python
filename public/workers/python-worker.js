@@ -51,6 +51,21 @@ def move_left():
 def move_right():
     __aq_move("right")
 `);
+      if (payload.challenge === "algorithms") {
+        pyodide.globals.set("__aq_student_code", payload.code);
+        try {
+          await pyodide.runPythonAsync(`
+import ast
+tree = ast.parse(__aq_student_code)
+if not any(isinstance(node, (ast.For, ast.While)) for node in ast.walk(tree)):
+    raise ValueError("Level 2 needs a for or while loop to repeat instructions.")
+if not any(isinstance(node, ast.If) for node in ast.walk(tree)):
+    raise ValueError("Level 2 needs an if statement to choose a movement.")
+`);
+        } finally {
+          pyodide.globals.delete("__aq_student_code");
+        }
+      }
       await pyodide.runPythonAsync(payload.code);
       self.postMessage({ type: "result", id: payload.id, ok: true, moves });
     } finally {
