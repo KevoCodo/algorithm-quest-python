@@ -167,6 +167,10 @@ export default function MazePlayground() {
   }
 
   function selectLevel(nextLevel: 1 | 2) {
+    // Replace the worker so the level-specific result handler cannot retain stale feedback.
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    setPythonReady(false);
     reset();
     setLevel(nextLevel);
     setCode(nextLevel === 2 ? ALGORITHM_STARTER : STARTER);
