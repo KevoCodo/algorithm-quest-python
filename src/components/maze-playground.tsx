@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getMovementTrace, getLessonHint, describeOutcome, type TraceStep } from "@/lib/lesson.mjs";
+import { ALGORITHM_STARTER, getAlgorithmHint, describeAlgorithmOutcome } from "@/lib/algorithm-challenge.mjs";
 import {
   GOAL, MAZE_ROWS, START, getCellType, movePlayer, replayMoves, type Direction, type Position,
 } from "@/lib/maze.mjs";
@@ -30,6 +31,7 @@ export default function MazePlayground() {
   const [feedback, setFeedback] = useState(INTRO);
   const [complete, setComplete] = useState(false);
   const [code, setCode] = useState(STARTER);
+  const [level, setLevel] = useState<1 | 2>(1);
   const [running, setRunning] = useState(false);
   const [pythonReady, setPythonReady] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
@@ -54,13 +56,13 @@ export default function MazePlayground() {
       setFacing(result.facing);
       setSteps(result.steps);
       setComplete(result.won);
-      setFeedback(describeOutcome(result));
+      setFeedback(level === 2 ? describeAlgorithmOutcome(result) : describeOutcome(result));
     } catch (error) {
       setTrace([]);
       setTraceIndex(0);
       setFeedback(error instanceof Error ? error.message : "Invalid movement commands.");
     }
-  }, []);
+  }, [level]);
 
   const startWorker = useCallback(() => {
     workerRef.current?.terminate();
@@ -161,7 +163,14 @@ export default function MazePlayground() {
       setRunning(false);
       setFeedback("Python took too long and was stopped. Check for an infinite loop and run again.");
     }, duration);
-    worker.postMessage({ type: "run", id, code });
+    worker.postMessage({ type: "run", id, code, challenge: level === 2 ? "algorithms" : "sequence" });
+  }
+
+  function selectLevel(nextLevel: 1 | 2) {
+    reset();
+    setLevel(nextLevel);
+    setCode(nextLevel === 2 ? ALGORITHM_STARTER : STARTER);
+    setFeedback(nextLevel === 2 ? "Mission: use a Python loop and if/elif to navigate to the star." : INTRO);
   }
 
   function reset() {
@@ -180,7 +189,7 @@ export default function MazePlayground() {
     setTraceIndex(0);
     setHintLevel(0);
     setComplete(false);
-    setFeedback(INTRO);
+    setFeedback(level === 2 ? "Mission: use a Python loop and if/elif to navigate to the star." : INTRO);
   }
 
   const preview = traceIndex > 0 ? trace[traceIndex - 1] : null;
@@ -190,12 +199,16 @@ export default function MazePlayground() {
 
   return (
     <section id="lesson" aria-labelledby="maze-title" aria-describedby="lesson-summary" className="min-w-0 rounded-3xl border border-slate-700 bg-slate-900/90 p-4 shadow-2xl sm:p-8">
+      <div className="mb-6 flex flex-wrap gap-3" role="group" aria-label="Choose a Python lesson">
+        <button type="button" onClick={() => selectLevel(1)} aria-pressed={level === 1} disabled={running} className={`min-h-11 rounded-xl border px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-cyan-300 ${level === 1 ? "border-cyan-300 bg-cyan-500/20 text-cyan-100" : "border-slate-600 text-slate-200"}`}>Level 1 · Sequencing</button>
+        <button type="button" onClick={() => selectLevel(2)} aria-pressed={level === 2} disabled={running} className={`min-h-11 rounded-xl border px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-cyan-300 ${level === 2 ? "border-cyan-300 bg-cyan-500/20 text-cyan-100" : "border-slate-600 text-slate-200"}`}>Level 2 · Algorithms</button>
+      </div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-300">Level 01 · Python movement</p>
-          <h2 id="maze-title" className="text-2xl font-bold">Find the golden goal</h2>
+          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-300">{level === 1 ? "Level 01 · Python movement" : "Level 02 · Loops and decisions"}</p>
+          <h2 id="maze-title" className="text-2xl font-bold">{level === 1 ? "Find the golden goal" : "Program a repeatable route"}</h2>
           <p id="lesson-summary" className="mt-2 max-w-xl text-sm leading-relaxed text-slate-300">
-            Write a sequence of Python commands that moves the explorer from S to the star. Each Run starts at S.
+            {level === 1 ? "Write a sequence of Python commands that moves the explorer from S to the star. Each Run starts at S." : "Store directions in a list, repeat with a for or while loop, and use if/elif to select the right command. Each Run starts at S."}
           </p>
         </div>
         <div className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-center">
@@ -204,11 +217,11 @@ export default function MazePlayground() {
         </div>
       </div>
       <div className="mb-6 rounded-xl border border-cyan-500/30 bg-cyan-950/25 p-4">
-        <h3 className="font-bold text-cyan-100">Learning goal: sequence your instructions</h3>
-        <p className="mt-2 text-sm text-slate-200">Each command moves the explorer one square. Walls stop movement. Plan a route to the star, then test your instructions with Run Python.</p>
+        <h3 className="font-bold text-cyan-100">{level === 1 ? "Learning goal: sequence your instructions" : "Learning goal: loops and conditional decisions"}</h3>
+        <p className="mt-2 text-sm text-slate-200">{level === 1 ? "Each command moves the explorer one square. Walls stop movement. Plan a route to the star, then test your instructions with Run Python." : "A loop avoids repeating the same lines of code. A conditional chooses which movement to make for each direction. Complete the route and test your algorithm."}</p>
         <ol className="mt-3 list-inside list-decimal space-y-1 text-sm text-slate-300">
           <li>Inspect the maze and choose a safe path.</li>
-          <li>Edit the starter Python commands.</li>
+          <li>{level === 1 ? "Edit the starter Python commands." : "Complete the route list and use a loop with if/elif to dispatch directions."}</li>
           <li>Run your code and review each step to improve it.</li>
         </ol>
       </div>
@@ -280,13 +293,13 @@ export default function MazePlayground() {
           <div className="min-w-0">
             <label htmlFor="python-code" className="mb-2 block text-sm font-bold text-white">Your Python code</label>
             <textarea id="python-code" value={code} onChange={(event) => setCode(event.target.value)}
-              aria-label="Editable Python movement program"
+              aria-label={level === 1 ? "Editable Python movement program" : "Editable Python loop and conditional program"}
               spellCheck={false} autoCapitalize="off" autoCorrect="off"
               className="block min-h-64 min-w-0 w-full resize-y rounded-xl border border-slate-600 bg-slate-950 p-4 font-mono text-sm leading-relaxed text-cyan-100 focus-visible:outline-2 focus-visible:outline-cyan-300"
               aria-describedby="python-help" />
             <p id="python-help" className="mt-2 text-xs leading-relaxed text-slate-300">
               Commands: <code>move_up()</code>, <code>move_down()</code>, <code>move_left()</code>, <code>move_right()</code>.
-              Python downloads the first time you run it.
+              {level === 2 ? " This challenge requires a real Python loop and if statement." : ""} Python downloads the first time you run it.
             </p>
           </div>
           <div role="group" aria-label="Python execution controls" className="grid grid-cols-1 gap-3 min-[350px]:grid-cols-2">
@@ -311,7 +324,7 @@ export default function MazePlayground() {
               </button>
             </div>
             <p className="mt-2 text-sm text-slate-200" aria-live="polite">
-              {hintLevel ? getLessonHint(hintLevel) : "Try a route before revealing a hint."}
+              {hintLevel ? (level === 2 ? getAlgorithmHint(hintLevel) : getLessonHint(hintLevel)) : "Try a route before revealing a hint."}
             </p>
           </div>
           <div role="status" aria-live="polite" aria-atomic="true" aria-label="Python feedback"
